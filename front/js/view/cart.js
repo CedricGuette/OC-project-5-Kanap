@@ -6,7 +6,7 @@ async function main(){
     const host = config.host
     
     const serverRequest = new App(host)
-    serverRequest.getAllProducts()
+    serverRequest.getCart()
 
     return
 }   

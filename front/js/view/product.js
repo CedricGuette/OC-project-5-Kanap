@@ -1,12 +1,14 @@
-async function main() {
-    await fetch(`http://localhost:3000/api/products`)
-    .then(res => res.json())
-    .then(product => {       
-        generateProductByID(product)
-    })
-    .catch(error => console.log( error ))
-}
+import { App } from '../objects/app.js'
+import { ConfigLoader } from '../objects/config.js'
 
-function generateProductByID(product) {
+async function main(){
+    const config =  new ConfigLoader()
+    const host = config.host
     
-}
+    const serverRequest = new App(host)
+    serverRequest.getOneProduct()
+
+    return
+}   
+
+main()
