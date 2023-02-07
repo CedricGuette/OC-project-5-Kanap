@@ -1,6 +1,11 @@
-import { App } from '../objects/app.js'
+import { AppSend } from '../objects/app.js'
 import { ConfigLoader } from '../objects/config.js'
-import { Cart } from './cart.js'
+import { CartInOrderPage } from './cart.js'
+
+/**
+ *  Main method of the object will render cart page
+ * @param {object} products  
+ */
 export class Order {
 
     _totalPrice = 0
@@ -8,6 +13,14 @@ export class Order {
     _productsInOrder = []
     _contactInfo = {}
     
+    constructor(products) {
+        this._products = products
+    }
+    
+    get products() {
+        return this._products
+    }
+
     get totalPrice() {
         return this._totalPrice
     }
@@ -34,12 +47,7 @@ export class Order {
         this._contactInfo = info
     }
 
-    /**
-     *  Main method of the object will render cart page
-     * 
-     * @param {object} data 
-     */
-    getOrderResume(data){
+    getOrderResume(){
         this.initTotalPrice()
         let productsInCart = JSON.parse(window.localStorage.getItem('cart'))
 
@@ -48,56 +56,33 @@ export class Order {
         }
         let productIndex = 0
 
-        for(let product of data) {
+        for(let i = 0 ; i < this.products.length ; i++) {
+            
+            const currentProductInData = this.products[i]
 
             for(let i = 0 ; i < productsInCart.length ; i++){
 
                 const currentProductInCart = productsInCart[i]
-
-                if(currentProductInCart[0] == product._id) {
-                    this.renderOneProductInCart(product, currentProductInCart[1], currentProductInCart[2], productIndex, product.price)
+                if(currentProductInCart[0] == currentProductInData._id) {
+                    const cart = new CartInOrderPage(currentProductInData._id, currentProductInCart[1], currentProductInCart[2], productIndex, currentProductInData.price, currentProductInData)
+                    cart.getCart()
                     productIndex++
                 }
             }
         }
-
         this.submit()
     }
 
     /**
-     *  Will set all product to order on the cart pager
-     * 
-     * @param {object} product object from API to render
-     * @param {string} colorPicked color picked by customer
-     * @param {int} quantity quantity picked by customer
-     * @param {int} productIndex index of product in localStorage
-     * @param {int} productPrice price of the product
-     */
-    renderOneProductInCart(product, colorPicked, quantity, productIndex) {
-        const cart = new Cart (product._id)
-        cart.colorPicked = colorPicked
-        cart.quantity = quantity
-        cart.productIndex = productIndex
-        cart.price = product.price
-        cart.getCart(product)
-    }
-
-    /**
-     * 
      *  Method that iniate price countainer on HTML
      *  Required to make all operation of price rendering possible
-     * 
      */
     initTotalPrice() {
         document.querySelector('#totalQuantity').innerText = 0
         document.querySelector('#totalPrice').innerText = 0
     }
 
-    /**
-     * 
-     *  Check the validity of all form inputs
-     * 
-     */
+    // Check the validity of all form inputs
     checkValidityForm() {
         this.addErrorMessageSimplified('firstName','prénom')
         this.addErrorMessageSimplified('lastName','nom')
@@ -107,9 +92,7 @@ export class Order {
     }
 
     /**
-     * 
      *  Will render errorMessage in right HTMLElement if the input of parentTag is not valid
-     * 
      * @param {string} parentTag 
      * @param {string} errorMessage 
      */
@@ -124,9 +107,7 @@ export class Order {
     }
 
     /**
-     * 
      *  Will call previous method to add 'veuillez renseigner votre' at fieldName string
-     * 
      * @param {string} parentTag 
      * @param {string} fieldName 
      */
@@ -136,11 +117,7 @@ export class Order {
         this.addErrorMessage(parentTag, errorMessage)
     }
 
-    /**
-     * 
-     *  Main method to submit the order
-     * 
-     */
+    // Main method to submit the order
     submit() {
 
         const form = document.querySelector('form')
@@ -150,35 +127,38 @@ export class Order {
             this.checkValidityForm()
 
             if(form.checkValidity() !== false) {
-                this.getProductList()
-                const contact = this.getContactObject()
-                const config = new ConfigLoader()
-                const api = new App(config.host)
-                api.sendOrder(contact)
+                if (this.getProductList() === false){
+                    alert('Votre panier est vide !')
+                }
+                 else {
+                    const contact = this.getContactObject()
+                    const config = new ConfigLoader()
+                    const serverRequest = new AppSend(config.host, contact)
+                    serverRequest.sendOrder()
+                }
             }
         })
     }
 
-    /**
-     * 
-     *  initialize and make order list of products id
-     * 
-     */
+    // initialize and make order list of products id or return false if localstorage is empty
     getProductList() {
         this.productsInOrder = []
         const localStorage = JSON.parse(window.localStorage.getItem('cart'))
 
-        for(let i = 0 ; i < localStorage.length ; i++){
-            const currentArray = localStorage[i]
-            this.productsInOrder.push(currentArray[0])
+        if(localStorage !== null) {
+
+            for(let i = 0 ; i < localStorage.length ; i++){
+                const currentArray = localStorage[i]
+                this.productsInOrder.push(currentArray[0])
+            }
+        } else {
+            return false
         }
     }
 
     /**
-     * 
      *  Will return the order object from all inputs and this.productsInOrder
-     * 
-     * @returns 
+     * @returns {object} order 
      */
     getContactObject() {
         this.getProductList()
@@ -201,17 +181,5 @@ export class Order {
         }
 
         return order
-    }
-
-    /**
-     * 
-     *  Will render the orderId in confirmation page
-     * 
-     * @param {string} orderId 
-     */
-    getConfirmationMessage(orderId) {
-        const orderSpan = document.querySelector('#orderId')
-        orderSpan.innerText = orderId
-        window.localStorage.removeItem('cart')
     }
 }

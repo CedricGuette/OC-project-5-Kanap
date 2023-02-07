@@ -1,10 +1,16 @@
-import { Cart } from './cart.js'
+import { CartInProductPage } from './cart.js'
+import { Text, Image, Attribute } from './elementAdder.js'
 
+/**
+ * Methods related to products from db
+ * @param {object} product
+ */
 export class Product {
 
-    _elementIdentifier = null
+    _elementIdentifier = ''
 
     constructor (product) {
+        this._product = product
         this._id = product._id
         this._name = product.name
         this._price = product.price
@@ -14,7 +20,9 @@ export class Product {
         this._colors = product.colors
     }
 
-// Setting all getters
+    get product() {
+        return this._product
+    }
     get id() {
         return this._id
     }
@@ -39,197 +47,113 @@ export class Product {
     get elementIdentifier() {
         return this._elementIdentifier
     }
+}
 
-    // Set an identifier to all render methods depending of what kind of page the object is rendering
-    set elementIdentifier(elementTag) {
-        this._elementIdentifier = elementTag
+export class ProductCard extends Product {
+
+    constructor(product, productIndex) {
+        super(product)
+        this._productIndex = productIndex
+        this._elementIdentifier = `[href="./product.html?id=${this.id}"]`
+    }
+    get productIndex(){
+        return this._productIndex
     }
 
     /**
-     * 
      *  Will render the product card in index.html usin
-     * 
      * @param {int} productIndex The order of the product to be shown
      */
-    getProductCard(productIndex) {
-        this.elementIdentifier = `[href="./product.html?id=${this.id}"]`
-        this.setFirstElement('a','#items',[['href',`./product.html?id=${this.id}`]], productIndex)       
-        this.addElementWithText('article', '', '', 'a')
-        this.addElementImage(this.imageUrl, `${this.altTxt}, ${this.name}`, 'article')
-        this.addElementWithText('h3', 'productName', this.name, 'article')
-        this.addElementWithText('p', 'productDescription', this.description, 'article')
+        getProductCard() {
+            const firstElement = new Attribute (`#items`, 'a', '', '', [['href',`./product.html?id=${this.id}`]], this.productIndex)
+            firstElement.addElementWithAttribut()
+            const article = new Text(`a${this.elementIdentifier}`, 'article', '', '')
+            article.addElementWithText()
+            const image = new Image(`${this.elementIdentifier} > article`, this.imageUrl, `${this.altTxt}, ${this.name}`)
+            image.addElementImage()
+            const h3 = new Text(`${this.elementIdentifier} > article`, 'h3', 'productName', this.name)
+            h3.addElementWithText()
+            const p = new Text(`${this.elementIdentifier} > article`, 'p', 'productDescription', this.description)
+            p.addElementWithText()
     }
+}
 
+export class ProductPage extends Product {
+
+    _elementIdentifier = '.item'
     /**
-     * 
-     *  Main method in product page, will render a product card
-     * 
+     * Main method in product page, will render a product card
      */
     getOneProduct() {
-        this.elementIdentifier = '.item'
         document.querySelector('title').innerText = this.name
-        this.addElementImage(this.imageUrl, this.altTxt,'article > .item__img')
+        const image = new Image('article > .item__img', this.imageUrl, this.altTxt)
+        image.addElementImage()
         document.querySelector('#title').innerText = this.name
         document.querySelector('#price').innerText = this.price
         document.querySelector('#description').innerText = this.description
-        const colorsArray = this.colors
+
+        let colorsArray = this.colors
         for(let i = 0; i < colorsArray.length; i++) {
             let a = i + 1
-            this.addElementWithAttribut('option', '', colorsArray[i], 'article > .item__content > .item__content__settings > .item__content__settings__color > #colors', [['value', colorsArray[i]]], a)
+            const colorsOption = new Attribute(`${this.elementIdentifier} > article > .item__content > .item__content__settings > .item__content__settings__color > #colors `,
+            'option', '', colorsArray[i], [['value', colorsArray[i]]], a)
+            colorsOption.addElementWithAttribut()
         }
-        const cart = new Cart(this.id)
+        const cart = new CartInProductPage(this.id)
         cart.addToCart()
     }
+}
+
+export class ProductInCart extends ProductCard {
+
+    constructor(product, productIndex, colorPicked, quantity){
+        super(product, productIndex)
+        this._colorPicked = colorPicked
+        this._quantity = quantity
+        this._elementIdentifier = `[data-id="${ this.id }"][data-color="${ colorPicked }"]`
+    }
+
+    get colorPicked() {
+        return this._colorPicked
+    }
+    get quantity() {
+        return this._quantity
+    }
+
 
     /**
-     * 
      *  Will render a product in the cart using the information from localhost and server
-     * 
      * @param {int} quantity how many of this product is in the cart
      * @param {string} colorPicked which color of this product is in the cart
      * @param {int} elementIndex the order of the product to be shown
      */
-    getProductInCart(quantity, colorPicked, elementIndex) {
-        this.elementIdentifier = `[data-id="${ this.id }"][data-color="${ colorPicked }"]`
+    getProductInCart() {
         const attributesArticle = [
             ['class', 'cart__item'],
             ['data-id', this.id],
-            ['data-color', colorPicked]
+            ['data-color', this.colorPicked]
         ]
-        this.setFirstElement('article', '#cart__items', attributesArticle, elementIndex)
-        this.addElementWithText('div', 'cart__item__img', '', '')
-        this.addElementImage(this.imageUrl, this.altTxt, '.cart__item__img') 
-        this.addElementWithText('div', 'cart__item__content', '', '')       
-        this.addElementWithText('div', 'cart__item__content__description', '', '.cart__item__content')
-        this.addElementWithText('h2', '', this.name, '.cart__item__content > .cart__item__content__description')
-        this.addElementWithText('p', '', colorPicked, '.cart__item__content > .cart__item__content__description')
-        this.addElementWithText('p', '', `${this.price} €`, '.cart__item__content > .cart__item__content__description')
-        this.addElementWithText('div', 'cart__item__content__settings', '','')
-        this.addElementWithText('div', 'cart__item__content__settings__quantity', '', '.cart__item__content__settings')
-        this.addElementWithText('p', '', 'Qté : ', '.cart__item__content__settings > .cart__item__content__settings__quantity')
+        const article = new Attribute('#cart__items','article', '', '', attributesArticle, this.productIndex).addElementWithAttribut()
+        const divImg = new Text(`article${this.elementIdentifier}`, 'div', 'cart__item__img','').addElementWithText()
+        const image = new Image(`${this.elementIdentifier} > .cart__item__img`, this.imageUrl, this.altTxt).addElementImage()
+        const divContent = new Text(`${this.elementIdentifier}`,'div', 'cart__item__content','').addElementWithText()
+        const divDescription = new Text(`${this.elementIdentifier} > .cart__item__content`,'div', 'cart__item__content__description','').addElementWithText()
+        const h2 = new Text(`${this.elementIdentifier} > .cart__item__content > div`,'h2', '', this.name).addElementWithText()
+        const pColor = new Text(`${this.elementIdentifier} > .cart__item__content > div`, 'p','', this.colorPicked).addElementWithText()
+        const pPrice = new Text(`${this.elementIdentifier} > .cart__item__content > div`, 'p', '', `${this.price} €`).addElementWithText()
+        const divSettings = new Text(`${this.elementIdentifier}`, 'div', 'cart__item__content__settings', '').addElementWithText()
+        const divQuantity = new Text(`${this.elementIdentifier} > .cart__item__content__settings`, 'div', 'cart__item__content__settings__quantity', '').addElementWithText()
+        const pQuantity = new Text(`${this.elementIdentifier} > .cart__item__content__settings > div`, 'p', '', 'Qté : ').addElementWithText()
+
         const attributesInput = [
             ['type','number'],
             ['name','itemQuantity'],
             ['min','1'],
             ['max','100'],
-            ['value', quantity]
+            ['value', this.quantity]
         ]
-        this.addElementWithAttribut('input', 'itemQuantity', '', '.cart__item__content__settings > .cart__item__content__settings__quantity', attributesInput, null)
-        this.addElementWithText('div', 'cart__item__content__settings__delete', '', '.cart__item__content__settings')
-        this.addElementWithText('p', 'deleteItem', 'Supprimer', '.cart__item__content__settings > .cart__item__content__settings__delete')
-    }
-      
-    /**
-     * Will inject a HTMLElement as <tagName class="className"> innerText </tagName>
-     * in parent node identified by parentClass
-     * 
-     * @param {string} tagName <tagName></tagName>
-     * @param {string} className can be an empty string !! don't use 'FirstClass' because it's a path to set correctly the FirstClass !!
-     * @param {string} innerText can be an empty string
-     * @param {string} parentClass !! must use selectors !!
-     */
-    addElementWithText(tagName, className, innerText, parentClass) {
-
-        // Building the tag for every product and setting parentElement on empty
-        const element = document.createElement(tagName)
-        let parentElement = ''
-
-        // First element particularity //
-        if(className === 'FirstElement') {
-            parentElement = document.querySelector(parentClass)
-        } else if(parentClass === '') { // Checking if there is a parentClass to add it in selector
-            parentElement = document.querySelector(`${this.elementIdentifier}`)
-        } else if(parentClass === 'a') { // index page particularity //
-            parentElement = document.querySelector(`${parentClass}${this.elementIdentifier}`)
-        } else {
-            parentElement = document.querySelector(`${this.elementIdentifier} > ${parentClass}`)
-        }
-
-        // Checking if there is a className
-        if(className !== '') {
-            element.classList.add(className)
-        } else if(className === 'FirstElement') {
-        // Do nothing to prevent adding a class if we set the first element //
-        }
-        element.innerText = innerText
-        parentElement.appendChild(element)
-    }
-
-    /**
-     * Will inject a HTMLElement as 
-     * <tagName class="className" attibute-1 = value-1 attibute-2 = value-2 ...> inneText </tagName>
-     * in parent node identified by parentClass
-     * 
-     * @param {string} tagName <tagName></tagName>
-     * @param {string} className can be an empty string
-     * @param {string} innerText can be an empty string
-     * @param {string} parentClass !! must use selectors !!
-     * @param {array} attributes !! Array on the model [['attribute','value'],[..,..]..]
-     * @param {int} elementIndex set to null if not using an iteration
-     */
-    addElementWithAttribut(tagName, className, innerText, parentClass, attributes, elementIndex) {
-        this.addElementWithText(tagName, className, innerText, parentClass)
-        let element = ''
-
-        // Checking if there is an index //
-        if(elementIndex !== null) {
-            element = document.querySelectorAll(`${parentClass} > ${tagName}`)[elementIndex]
-        } else if(parentClass !== ''){ // Checking if there is a parentClass to set it correctly
-            element = document.querySelector(`${this.elementIdentifier} > ${parentClass} > ${tagName}`)
-        } else {
-            element = document.querySelector(`${this.elementIdentifier} > ${tagName}`)
-        }
-
-        // Looping the array to set all attributes
-        for(let i = 0 ; i < attributes.length ; i++) {
-            const currentAttribute = attributes[i]
-            element.setAttribute(currentAttribute[0], currentAttribute[1])
-        }  
-    }
-
-    /**
-     * This method will build an index to be used by other methods addElementWithText() and AddElementWithAttribute()
-     * @param {string} tagName <tagName></tagName>
-     * @param {string} wrapper To know where we gonna set the index of elements
-     * @param {array} attributes array to set the element
-     * @param {int} elementIndex must be set by the loop calling all products in the page
-     */
-    setFirstElement(tagName, wrapper, attributes, elementIndex) {
-
-        // We call what we already use to set elements
-        const innerText = ''
-        const className = 'FirstElement'
-        this.addElementWithAttribut(tagName, className, innerText, wrapper, attributes, elementIndex)
-    }
-    
-    /**
-     * Will inject a HTMLElement as 
-     * <img src="imageUrl" alt="altTxt">
-     * in parent node identified by parentClass 
-     * @param {string} imageUrl 
-     * @param {string} altTxt 
-     * @param {string} parentClass !! must use selectors !!
-     */
-    addElementImage(imageUrl, altTxt, parentClass) {
-
-        const element = document.createElement('img')
-        let parentElement = '' 
-        // Checking if there is a parentClass
-        if(parentClass !== ''){  
-            parentElement = document.querySelector(`${this.elementIdentifier} > ${parentClass}`)
-        }
-        else {
-            parentElement = document.querySelector(`${this.elementIdentifier}`)
-        }
-
-        element.src = imageUrl
-        element.alt = altTxt
-        parentElement.appendChild(element)
-    }
-
-    setElementIdentifier(colorPicked, option) {
-        this.elementIdentifier = `[href="./product.html?id=${this.id}"]`
-        this.elementIdentifier = `[data-id="${ this.id }"][data-color="${ colorPicked }"]`
-        this.elementIdentifier = '.item'
+        const inputQuantity = new Attribute(`${this.elementIdentifier} > .cart__item__content__settings > div`, 'input', 'itemQuantity', '',attributesInput, null).addElementWithAttribut()
+        const divDelete = new Text(`${this.elementIdentifier} > .cart__item__content__settings`, 'div', 'cart__item__content__settings__delete', '').addElementWithText()
+        const pDelete = new Text(`${this.elementIdentifier} > .cart__item__content__settings > .cart__item__content__settings__delete`, 'p', 'deleteItem', 'Supprimer').addElementWithText()
     }
 }

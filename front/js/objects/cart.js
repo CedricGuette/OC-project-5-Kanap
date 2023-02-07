@@ -1,21 +1,17 @@
-import { Product } from './product.js'
+import { ProductInCart } from './product.js'
 
-export class Cart {
+export class CartInProductPage {
+
+    _cart = []
+    _colorPicked = ''
+    _quantity = 0
 
     constructor(id) {
         this._id = id
-        this._cart = []
-        this._colorPicked = ''
-        this._quantity = 0
-        this._productIndex = 0
-        this._price = 0
     }
 
     get id() {
         return this._id
-    }
-    get cart() {
-        return this._cart
     }
     get colorPicked() {
         return this._colorPicked
@@ -23,16 +19,10 @@ export class Cart {
     get quantity() {
         return this._quantity
     }
-    get productIndex() {
-        return this._productIndex
-    }
-    get price() {
-        return this._price
+    get cart() {
+        return this._cart
     }
 
-    set id(idOfProduct) {
-        this._id = idOfProduct
-    }
     set cart(cartInArray) {
         this._cart = cartInArray
     }
@@ -42,18 +32,9 @@ export class Cart {
     set quantity(howMany) {
         this._quantity = howMany
     }
-    set productIndex(index) {
-        this._productIndex = index
-    }
-    set price(cost) {
-        this._price = cost
-    }
+    
 
-    /**
-     * 
-     *  Method used to put a product in cart
-     * 
-     */
+    // Method used to put a product in cart
     addToCart() {
         this.listenToQuantity()
         this.listenToColor()
@@ -73,11 +54,8 @@ export class Cart {
         })
     }
 
-
     /**
-     * 
      *  EventListener on color of product selector
-     * 
      * @returns {string} colorsOption color picked by customer in this.colorPicked
      */
     listenToColor() {
@@ -88,9 +66,7 @@ export class Cart {
     }
 
     /**
-     * 
      *  EventListener on how many products are selected (quantity)
-     * 
      * @returns {string} quantity picked by customer
      */
     listenToQuantity() {
@@ -101,9 +77,7 @@ export class Cart {
     }
 
     /**
-     * 
      *  Will return if cart entries are valid with alert messages if not
-     * 
      * @returns {boolean} 
      */
     isCartEntryValid() {
@@ -121,10 +95,8 @@ export class Cart {
     }
 
     /**
-     * 
      *  First check id, then color
      *  Will return false if he can't finds product in cart or will call isAmountOfProductinCartValide
-     * 
      * @returns {boolean} 
      */
     isProductAlreadyinCart() {
@@ -145,9 +117,7 @@ export class Cart {
     }
 
     /**
-     * 
      *  Will add the product in localstorage if the amount in cart is available
-     * 
      * @param {array} currentProduct 
      * @param {int} positionInCart position of picked product in the array
      * @returns {boolean}
@@ -162,28 +132,91 @@ export class Cart {
             this.cart[positionInCart] = [this.id, this.colorPicked, newQuantity]
             this.replaceCartInLocalstorage(this.cart)
             alert('Votre selection a bien été ajoutée au panier')
+            return true
+        }
+    }
+    
+    // AddEventListener on quantity of product to trigger all modification process
+    modifyQuantityListener() {
+        const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]`
+        const quantityValue = document.querySelector(`${elementIdentifier} > .cart__item__content__settings > .cart__item__content__settings__quantity > .itemQuantity`)
+        quantityValue.addEventListener('change', (event) => { this.changeFromCart(event) })
+    }
+
+    // Will set cart from localstorage or set it empty
+    setCartFromLocalstorage() {
+        if(window.localStorage.getItem('cart') !== null) {
+            this.cart = JSON.parse(window.localStorage.getItem('cart'))
+            for(let i = 0 ; i < this.cart.length ; i++) {
+                (this.cart[i])[2] = parseInt((this.cart[i])[2])
+            }
         }
     }
 
+    // Will replace cart in localhost storage
+    replaceCartInLocalstorage() {
+        window.localStorage.removeItem('cart')
+        window.localStorage.setItem('cart', JSON.stringify(this.cart))
+    }
+
+    // Will delete a product from localstorage
+    deleteProductFromLocalstorage() {
+        const localStorage = JSON.parse(window.localStorage.getItem('cart'))
+        for(let i = 0 ; i < localStorage.length ; i++) {
+            const currentProduct = localStorage[i] 
+            if(currentProduct[0] === this.id) {
+                if(currentProduct[1] === this.colorPicked) {
+                    localStorage.splice(i, 1)
+                }
+            }
+        }
+        this.cart = localStorage
+        this.replaceCartInLocalstorage()
+    }
+}
+
+export class CartInOrderPage extends CartInProductPage {
+
+    constructor (id, colorPicked, quantity, productIndex, price, products) {
+        super(id)
+        this._colorPicked = colorPicked
+        this._quantity = quantity
+        this._productIndex = productIndex
+        this._price = price
+        this._products = products
+    }
+
+    get productIndex() {
+        return this._productIndex
+    }
+    get price() {
+        return this._price
+    }
+    get products() {
+        return this._products
+    }
+    
+
+    set productIndex(index) {
+        this._productIndex = index
+    }
+    set price(cost) {
+        this._price = cost
+    }
+
     /**
-     * 
      *  Main method to render a product card on cart page
-     * 
      * @param {object} product 
      */
-    getCart(product) {
-        const productInCart = new Product(product)
-        productInCart.getProductInCart(this.quantity, this.colorPicked, this.productIndex)
+    getCart() {
+        const productInCart = new ProductInCart(this.products, this.productIndex, this.colorPicked, this.quantity)
+        productInCart.getProductInCart()
         this.deleteButtonListener()
         this.modifyQuantityListener()
         this.setPrice()
     }
 
-    /**
-     * 
-     *  Will modificate the price on cart page
-     * 
-     */
+    // Will modificate the price on cart page
     setPrice() {
         const priceSpan = document.querySelector('#totalPrice')
         const articleSpan = document.querySelector('#totalQuantity')
@@ -199,9 +232,8 @@ export class Cart {
         articleSpan.innerText = totalQuantity
     }
 
-    /////////// A MODIFIER /////////////
-    modifyPrice(operation, quantity) {
-        const normalize = parseInt(quantity)
+    // Will calculate the price using the gap between quantities before/after operation
+    modifyPrice(gap) {
         const priceSpan = document.querySelector('#totalPrice')
         const articleSpan = document.querySelector('#totalQuantity')
 
@@ -210,124 +242,60 @@ export class Cart {
 
         totalPrice = parseInt(totalPrice)
         totalQuantity = parseInt(totalQuantity)
+        this.quantity = this.quantity + gap
 
-        if(operation === 0) {
-            totalPrice = totalPrice - (this.price * normalize)
-            totalQuantity = totalQuantity - quantity
-        } else {
-            totalPrice = totalPrice + (this.price * quantity)
-            totalQuantity = totalQuantity + quantity
-        }
+        totalPrice = totalPrice + (this.price * gap)
+        totalQuantity = totalQuantity + gap
+        console.log('totalPrice : ', totalPrice)
+        console.log('totalQuantity : ', totalQuantity)
 
         priceSpan.innerText = totalPrice
         articleSpan.innerText = totalQuantity
+        // if(this.quantity === 0){
+        //     const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]`
+        //     const productElement = document.querySelector(`${elementIdentifier}`)
+        //     this.deleteFromCart(productElement)
+        // }  bugging when I select 0 (not deleting from localstorage)
     }
 
+    // Will calculte the gap between initial quantity and quantity in addEventListener
+    changeFromCart(event) {
+        this.setCartFromLocalstorage()
+        let currentValue = parseInt(event.target.value)
+        console.log('currentValue: ', currentValue)
+        console.log('this.quantity: ', this.quantity)
+
+        if(currentValue == 0||currentValue > 100) {
+            alert("Veuillez choisir un nombre d'article correcte svp")
+            return false
+
+        } else {
+
+                const gap = currentValue - this.quantity 
+                console.log(gap)
+                this.modifyPrice(gap)
+
+            this.cart[this.productIndex] = [this.id, this.colorPicked, currentValue]
+            this.replaceCartInLocalstorage()
+        }
+    }    
 
     /**
-     * 
      *  Will delete a product from localstorage and the element in page
-     * 
-     * @param {*} domElement 
+     * @param {HTMLElement} domElement 
      */
     deleteFromCart(domElement) {
-            this.setCartFromLocalstorage()
-            this.deleteProductFromLocalstorage(this.id, this.colorPicked)
-            this.cart.splice(this.productIndex, 1)
-            this.modifyPrice('SUBSTRACT', this.quantity)
-            document.querySelector('#cart__items').removeChild(domElement)
+        this.setCartFromLocalstorage()
+        this.deleteProductFromLocalstorage()
+        this.cart.splice(this.productIndex, 1)
+        document.querySelector('#cart__items').removeChild(domElement)
     }
 
-    /**
-     * 
-     *  AddEventListener on delete button of product to trigger all delete process
-     * 
-     */
+    // AddEventListener on delete button of product to trigger all delete process
     deleteButtonListener() {
-        const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]`
+        const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]` /// MARKER
         const deleteButton = document.querySelector(`${elementIdentifier} > .cart__item__content__settings > .cart__item__content__settings__delete > .deleteItem`)
         const domElement = document.querySelector(`${elementIdentifier}`)
         deleteButton.addEventListener('click', () => { this.deleteFromCart(domElement) })
-    }
-
-    //////////// A MODIFIER /////////////
-    changeFromCart(event) {
-        this.setCartFromLocalstorage()
-        let currentValue = event.target.value
-
-        if(currentValue === 0) {
-            this.deleteFromCart()
-        }
-        if(currentValue > 100) {
-            alert("Veuillez choisir un nombre d'article correcte svp")
-        } else {
-            let difference = parseInt(this._quantity) - parseInt(currentValue)
-            console.log(difference)
-
-            if(difference >= 0){
-                this.modifyPrice(0, difference)
-            } else{
-                difference = Math.abs(difference)
-                console.log(difference)
-                this.modifyPrice(1, difference)
-            }
-            
-            this.cart[this.productIndex] = [this.id, this.colorPicked, parseInt(currentValue)]
-            this.replaceCartInLocalstorage()
-        }
-    }
-    
-    /**
-     * 
-     *  AddEventListener on quantity of product to trigger all modification process
-     * 
-     */
-    modifyQuantityListener() {
-        const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]`
-        const quantityValue = document.querySelector(`${elementIdentifier} > .cart__item__content__settings > .cart__item__content__settings__quantity > .itemQuantity`)
-        quantityValue.addEventListener('change', (event) => { this.changeFromCart(event) })
-    }
-
-    /**
-     * 
-     *  Will set cart from localstorage or set it empty
-     * 
-     */
-    setCartFromLocalstorage() {
-        if(window.localStorage.getItem('cart') !== null) {
-            this.cart = JSON.parse(window.localStorage.getItem('cart'))
-            for(let i = 0 ; i < this.cart.length ; i++) {
-                (this.cart[i])[2] = parseInt((this.cart[i])[2])
-            }
-        }
-    }
-
-    /**
-     * 
-     *  Will replace cart in localhost storage
-     * 
-     */
-    replaceCartInLocalstorage() {
-        window.localStorage.removeItem('cart')
-        window.localStorage.setItem('cart', JSON.stringify(this.cart))
-    }
-
-    /**
-     * 
-     *  will delete a product from localstorage
-     * 
-     */
-    deleteProductFromLocalstorage() {
-        const localStorage = JSON.parse(window.localStorage.getItem('cart'))
-        for(let i = 0 ; i < localStorage.length ; i++) {
-            const currentProduct = localStorage[i] 
-            if(currentProduct[0] === this.id) {
-                if(currentProduct[1] === this.colorPicked) {
-                    localStorage.splice(i, 1)
-                }
-            }
-        }
-        this.cart = localStorage
-        this.replaceCartInLocalstorage()
     }
 }

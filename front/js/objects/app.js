@@ -1,6 +1,10 @@
-import { Product } from './product.js'
+import { ProductCard, ProductPage } from './product.js'
 import { Order } from './order.js'
 
+/**
+ * Will send get requests
+ * @param {string} url in config settings
+ */
 export class App {
     constructor(url) {
         this._url = url
@@ -10,9 +14,7 @@ export class App {
         return this._url
     }
 
-    /**
-     *  Main method in index.html
-     */
+    // GET all products
     getAllProducts() {
 
         fetch(`${ this.url }`)
@@ -20,8 +22,8 @@ export class App {
         .then(data => { 
     
             for(let i = 0 ; i<data.length ; i++){
-                const productCard = new Product(data[i])
-                productCard.getProductCard(i)
+                const productCard = new ProductCard(data[i], i)
+                productCard.getProductCard()
             }
     
             return
@@ -29,16 +31,46 @@ export class App {
         .catch(error => console.log( error ))
     }
 
-    /**
-     *  Main method in product.html
-     */
-    getOneProduct() {
-        const productId = this.getParamInUrl('id')
+    // GET products in cart
+    getCart() {
+        fetch(`${ this.url }`)
+        .then(res => res.json())
+        .then(products => { 
+            const order = new Order(products)
+            order.getOrderResume()
+        })
+        .catch(error => console.log( error ))
+    }
+}
 
-        fetch(`${ this.url }${productId}`)
+/**
+ * Will send get request by param in url
+ * @param {string} url in config settings
+ * @param {string} param to pick in url
+ */
+export class AppGetByParam extends App {
+    constructor(url, param) {
+        super (url)
+        this._param = param
+    }
+
+    get param() {
+        return this._param
+    }
+
+    // Retrieving param from url
+    getParamInUrl () {
+        const url = (new URL (document.location)).searchParams
+        const paramInUrl = url.get(this.param)
+        return paramInUrl
+    }
+
+    // GET one product by Id in url
+    getOneProduct() {
+        fetch(`${ this.url }${ this.getParamInUrl() }`)
         .then(res => res.json())
         .then(data => { 
-                const product = new Product(data)
+                const product = new ProductPage(data)
                 product.getOneProduct()
     
             return
@@ -46,32 +78,38 @@ export class App {
         .catch(error => console.log( error ))
     }
 
-    /**
-     *  Main method in cart.html
-     */
-    getCart() {
-        fetch(`${ this.url }`)
-        .then(res => res.json())
-        .then(data => { 
-            const order = new Order()
-            order.getOrderResume(data)
-        })
-        .catch(error => console.log( error ))
+    // Will send confirmation order to customer
+    getConfirmation() {
+        const orderId = this.getParamInUrl(this.param)
+        const orderSpan = document.querySelector('#orderId')
+        orderSpan.innerText = orderId
+        window.localStorage.removeItem('cart')
+    }
+}
+
+/**
+ *  Will send the order in POST method to server and get 
+ * @param {string} url from config
+ * @param {object} customerOrder 
+ */
+export class AppSend extends App {
+    constructor(url, customerOrder) {
+        super(url)
+        this._customerOrder = customerOrder
     }
 
-    /**
-     * 
-     *  Will send the order in POST method to server and get 
-     * 
-     * @param {*} customerList 
-     */
-    sendOrder(customerList) {
+    get customerOrder() {
+        return this._customerOrder
+    }
+
+    // POST order to server
+    sendOrder() {
         fetch(`${ this.url }order`,{
             method: "POST",
             headers: {
                 "Content-type" : "application/json",
             },
-            body: JSON.stringify(customerList)
+            body: JSON.stringify(this.customerOrder)
         })
         .then(res => res.json())
         .then(data => { 
@@ -80,17 +118,5 @@ export class App {
             window.location.href = `./confirmation.html?orderId=${orderId}`
         })
         .catch(error => console.log( error ))
-    }
-
-    getConfirmation() {
-        const orderId = this.getParamInUrl('orderId')
-        const order = new Order()
-        order.getConfirmationMessage(orderId)
-    }
-
-    getParamInUrl (param) {
-        const url = (new URL (document.location)).searchParams
-        const paramInUrl = url.get(param)
-        return paramInUrl
     }
 }
