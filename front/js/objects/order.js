@@ -70,24 +70,35 @@ export class Order {
         document.querySelector('#totalPrice').innerText = 0
     }
 
-    // Check the validity of all form inputs
+    // Check the validity of all form inputs and 
     checkValidityForm() {
-        this.addErrorMessageSimplified('firstName','prénom')
-        this.addErrorMessageSimplified('lastName','nom')
-        this.addErrorMessageSimplified('address','addresse')
-        this.addErrorMessageSimplified('city','ville')
-        this.addErrorMessage('email','Veuillez renseigner une addresse email valide')
+        this.addErrorMessageSimplified('firstName','prénom', 0)
+        this.addErrorMessageSimplified('lastName','nom', 1) // allows spaces in case of multiple last names
+        this.addErrorMessageSimplified('address','addresse', 2)
+        this.addErrorMessageSimplified('city','ville', 0)
+        this.addErrorMessage('email','Veuillez renseigner une addresse email valide', 3)
+
+        if(this.regexer('firstName', 0)
+            && this.regexer('lastName', 1) 
+            && this.regexer('address', 2)
+            && this.regexer('city', 0)
+            && this.regexer('email', 3)) {
+            return true
+        } else {
+            return false
+        }
     }
 
     /**
      *  Will render errorMessage in right HTMLElement if the input of parentTag is not valid
-     * @param {string} parentTag 
+     * @param {string} fieldName
      * @param {string} errorMessage 
      */
-    addErrorMessage(parentTag, errorMessage) {
-        const field = document.querySelector(`#${parentTag}`)
-        const errorElement = document.querySelector(`#${parentTag}ErrorMsg`)
-        if(!field.checkValidity()){
+    addErrorMessage(fieldName, errorMessage, indexRegex) {
+
+        const errorElement = document.querySelector(`#${fieldName}ErrorMsg`)
+
+        if(!this.regexer(fieldName, indexRegex)){
             errorElement.innerText = errorMessage
         } else {
             errorElement.innerText = ''
@@ -95,28 +106,47 @@ export class Order {
     }
 
     /**
+     *  Will check if entries are valid and return true or false
+     *
+     * @param {string} fieldName Wich field it gonna test
+     * @param {int} indexRegex will select the regex rules in typeOfRegex array
+     * @returns {boolean} true if test is valid
+     */
+    regexer(fieldName, indexRegex) {
+        const typeOfRegex = [
+            "^[a-zA-ZâàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-]{2,20}$",
+            "^[a-zA-ZâàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-'\ ]{2,20}$",            
+            "^[a-zA-Z0-9âàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-'\ ]{2,60}$",
+            "^[a-zA-Z0-9.'\-_]{1,64}[@]{1}[a-zA-Z0-9.'\-_]{2,255}[.]{1}[a-z]{2,10}$"
+        ]
+
+        const field = document.querySelector(`#${fieldName}`)
+        const regExp = new RegExp(typeOfRegex[indexRegex], 'g')
+        return regExp.test(field.value)
+    }
+
+    /**
      *  Will call previous method to add 'veuillez renseigner votre' at fieldName string
      * @param {string} parentTag 
      * @param {string} fieldName 
      */
-    addErrorMessageSimplified(parentTag, fieldName) {
+    addErrorMessageSimplified(parentTag, fieldName, indexRegex) {
         let errorMessage = 'Veuillez renseigner votre'
         errorMessage = errorMessage + ` ${fieldName}`
-        this.addErrorMessage(parentTag, errorMessage)
+        this.addErrorMessage(parentTag, errorMessage, indexRegex)
     }
 
     // Main method to submit the order
     submit() {
 
         const form = document.querySelector('form')
-        form.setAttribute('novalidate','true')
+        form.setAttribute('novalidate','true') // to block submit field
         form.addEventListener('submit', (event) =>{
             event.preventDefault()
-            this.checkValidityForm()
 
-            if(form.checkValidity()) {
+            if(this.checkValidityForm()) { // test all fields to allow submission
                 this.getProductList()
-                if (this.productsInOrder == false){
+                if (this.productsInOrder == false){ // check if cart is empty
                     alert('Votre panier est vide !')
                 }
                  else {
