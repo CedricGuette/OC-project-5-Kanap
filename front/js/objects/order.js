@@ -3,13 +3,11 @@ import { ConfigLoader } from '../objects/config.js'
 import { CartInOrderPage } from './cart.js'
 
 /**
- *  Main method of the object will render cart page
- * @param {object} products  
+ *  This object has to collect all the infos from the order and customer to send a correct request to server
+ * @param {object} products  list of products from db
  */
 export class Order {
 
-    _totalPrice = 0
-    _totalProduct = 0
     _productsInOrder = []
     _contactInfo = {}
     
@@ -20,13 +18,6 @@ export class Order {
     get products() {
         return this._products
     }
-
-    get totalPrice() {
-        return this._totalPrice
-    }
-    get totalProduct() {
-        return this._totalProduct
-    }
     get productsInOrder() {
         return this._productsInOrder
     }
@@ -34,12 +25,6 @@ export class Order {
         return this._contactInfo
     }
 
-    set totalPrice(price) {
-        this._totalPrice = price
-    }
-    set totalProduct(total) {
-        this._totalProduct = total
-    }
     set productsInOrder(product) {
         this._productsInOrder = product
     }
@@ -47,6 +32,9 @@ export class Order {
         this._contactInfo = info
     }
 
+    /**
+     * This method is called to render cart resume 
+     */
     getOrderResume(){
         this.initTotalPrice()
         let productsInCart = JSON.parse(localStorage.getItem('cart'))
@@ -63,9 +51,9 @@ export class Order {
             for(let i = 0 ; i < productsInCart.length ; i++){
 
                 const currentProductInCart = productsInCart[i]
-                if(currentProductInCart[0] == currentProductInData._id) {
-                    const cart = new CartInOrderPage(currentProductInData._id, currentProductInCart[1], currentProductInCart[2], productIndex, currentProductInData.price, currentProductInData)
-                    cart.getCart()
+                if(currentProductInCart[0] === currentProductInData._id) {
+                    const cart = new CartInOrderPage(currentProductInData._id, currentProductInCart[1], currentProductInCart[2], currentProductInData.price)
+                    cart.getCart(currentProductInData, productIndex)
                     productIndex++
                 }
             }
@@ -128,7 +116,6 @@ export class Order {
 
             if(form.checkValidity()) {
                 this.getProductList()
-                console.log(this.productsInOrder)
                 if (this.productsInOrder == false){
                     alert('Votre panier est vide !')
                 }
@@ -181,7 +168,6 @@ export class Order {
             },
             products: this.productsInOrder
         }
-        console.log(order)
         return order
     }
 }

@@ -1,4 +1,12 @@
+/**
+ * These objects will be called to generate dynamically all elements in DOM
+ */
 
+/**
+ * Object that will extends all objects here
+ * 
+ * @param {string} parentClass !! must use selectors !!
+ */
 class ElementAdder {
     constructor(parentClass) {
         this._parentClass = parentClass
@@ -8,6 +16,13 @@ class ElementAdder {
     }
 }
 
+/**
+ * Will generate a DOM element with an image
+ * 
+ * @param {string} parentClass !! must use selectors !!
+ * @param {string} imageUrl url of the product image
+ * @param {string} altTxt text to be put in alt attribute
+ */
 export class Image extends ElementAdder {
     constructor(parentClass, imageUrl, altTxt) {
         super(parentClass)
@@ -35,10 +50,10 @@ export class Image extends ElementAdder {
  * Will inject a HTMLElement as <tagName class="className"> innerText </tagName>
  * in parent node identified by parentClass
  * 
+ * @param {string} parentClass !! must use selectors !!
  * @param {string} tagName <tagName></tagName>
  * @param {string} className can be an empty string !! don't use 'FirstClass' because it's a path to set correctly the FirstClass !!
  * @param {string} innerText can be an empty string
- * @param {string} parentClass !! must use selectors !!
  */
 export class Text extends ElementAdder {
     constructor(parentClass, tagName, className, innerText) {
@@ -58,6 +73,7 @@ export class Text extends ElementAdder {
         return this._innerText
     }
 
+    // Method called to add a HTML element with the right class and text
     addElementWithText() {
         const element = document.createElement(this.tagName)
         const parentElement = document.querySelector(`${this.parentClass}`)
@@ -75,10 +91,10 @@ export class Text extends ElementAdder {
  * <tagName class="className" attibute-1 = value-1 attibute-2 = value-2 ...> inneText </tagName>
  * in parent node identified by parentClass
  * 
+ * @param {string} parentClass !! must use selectors !!
  * @param {string} tagName <tagName></tagName>
  * @param {string} className can be an empty string
  * @param {string} innerText can be an empty string
- * @param {string} parentClass !! must use selectors !!
  * @param {array} attributes !! Array on the model [['attribute','value'],[..,..]..]
  * @param {int} elementIndex set to null if not using an iteration
  */
@@ -95,7 +111,7 @@ export class Attribute extends Text {
         return this._elementIndex
     }
 
-
+    // Method to add an HTML element with all attributs into the attributes array
     addElementWithAttribut() {
         this.addElementWithText()
         let element = ''

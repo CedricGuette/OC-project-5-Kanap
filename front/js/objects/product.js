@@ -2,8 +2,12 @@ import { CartInProductPage } from './cart.js'
 import { Text, Image, Attribute } from './elementAdder.js'
 
 /**
+ * All these objects will be called to render products in each pages
+ */
+
+/**
  * Methods related to products from db
- * @param {object} product
+ * @param {object} product one object from GET request
  */
 export class Product {
 
@@ -49,6 +53,13 @@ export class Product {
     }
 }
 
+/**
+ * Will be called to render a product card in index page
+ * 
+ * @param {object} product one object from GET request
+ * @param {int} productIndex used to put the HTML element in the right place
+ * @returns {string} elementIdentifier 
+ */
 export class ProductCard extends Product {
 
     constructor(product, productIndex) {
@@ -62,7 +73,6 @@ export class ProductCard extends Product {
 
     /**
      *  Will render the product card in index.html usin
-     * @param {int} productIndex The order of the product to be shown
      */
         getProductCard() {
             const firstElement = new Attribute (`#items`, 'a', '', '', [['href',`./product.html?id=${this.id}`]], this.productIndex)
@@ -78,12 +88,17 @@ export class ProductCard extends Product {
     }
 }
 
+/**
+ * Will be called to render a single product in product.html
+ * 
+ * @param {object} product one object from GET request
+ */
 export class ProductPage extends Product {
 
     _elementIdentifier = '.item'
-    
+
     /**
-     * Main method in product page, will render a product card
+     * Main method in product page, will render the product page
      */
     getOneProduct() {
         document.title = this.name
@@ -105,6 +120,13 @@ export class ProductPage extends Product {
     }
 }
 
+/**
+ * @param {object} product one object from GET request
+ * @param {int} productIndex used to put the HTML element in the right place
+ * @param {sting} colorPicked wich color was picked by customer
+ * @param {int} quantity how much of this product in cart
+ * @returns {string} elementIdentifier 
+ */
 export class ProductInCart extends ProductCard {
 
     constructor(product, productIndex, colorPicked, quantity){
@@ -124,9 +146,6 @@ export class ProductInCart extends ProductCard {
 
     /**
      *  Will render a product in the cart using the information from localhost and server
-     * @param {int} quantity how many of this product is in the cart
-     * @param {string} colorPicked which color of this product is in the cart
-     * @param {int} elementIndex the order of the product to be shown
      */
     getProductInCart() {
         const attributesArticle = [

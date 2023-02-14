@@ -15,9 +15,9 @@ export class App {
     }
 
     // GET all products
-    getAllProducts() {
+    async getAllProducts() {
 
-        fetch(`${ this.url }`)
+        await fetch(`${ this.url }`)
         .then(res => res.json())
         .then(data => { 
     
@@ -32,8 +32,8 @@ export class App {
     }
 
     // GET products in cart
-    getCart() {
-        fetch(`${ this.url }`)
+    async getCart() {
+        await fetch(`${ this.url }`)
         .then(res => res.json())
         .then(products => { 
             const order = new Order(products)
@@ -66,8 +66,8 @@ export class AppGetByParam extends App {
     }
 
     // GET one product by Id in url
-    getOneProduct() {
-        fetch(`${ this.url }${ this.getParamInUrl() }`)
+    async getOneProduct() {
+        await fetch(`${ this.url }${ this.getParamInUrl() }`)
         .then(res => res.json())
         .then(data => { 
                 const product = new ProductPage(data)
@@ -103,8 +103,8 @@ export class AppSend extends App {
     }
 
     // POST order to server
-    sendOrder() {
-        fetch(`${ this.url }order`,{
+    async sendOrder() {
+        await fetch(`${ this.url }order`,{
             method: "POST",
             headers: {
                 "Content-type" : "application/json",
