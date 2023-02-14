@@ -61,17 +61,7 @@ export class Text extends ElementAdder {
     addElementWithText() {
         const element = document.createElement(this.tagName)
         const parentElement = document.querySelector(`${this.parentClass}`)
-        if(this.className !== '') { // if(this.className) => != '' , 0 , undefined, null, false
-            element.classList.add(this.className)
-        }
-        element.innerText = this.innerText
-        parentElement.appendChild(element)
-    }
-    //!!!!!!!!
-    addLink() {
-        const element = document.createElement(this.tagName)
-        const parentElement = document.querySelector(element.closest(`${this.parentClass}`))
-        if(this.className !== '') {
+        if(this.className) {
             element.classList.add(this.className)
         }
         element.innerText = this.innerText
@@ -110,7 +100,7 @@ export class Attribute extends Text {
         this.addElementWithText()
         let element = ''
 
-        if(this.elementIndex !== null){
+        if(this.elementIndex){
         element = document.querySelectorAll(`${this.parentClass} > ${this.tagName}`)[this.elementIndex]
         } else {
         element = document.querySelector(`${this.parentClass} > ${this.tagName}`)

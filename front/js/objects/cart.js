@@ -47,8 +47,9 @@ export class CartInProductPage {
 
                 if(this.isProductAlreadyinCart() === false) {
                     this.cart.push([this.id, this.colorPicked, this.quantity])
-                    this.replaceCartInLocalstorage(this.cart)
+                    this.replaceCartInLocalstorage()
                     alert('Votre selection a bien été ajoutée au panier')
+                    location.href = `./index.html`
                 }
             }
         })
@@ -130,8 +131,9 @@ export class CartInProductPage {
         } else {
             const newQuantity = this.quantity + currentProduct[2]
             this.cart[positionInCart] = [this.id, this.colorPicked, newQuantity]
-            this.replaceCartInLocalstorage(this.cart)
+            this.replaceCartInLocalstorage()
             alert('Votre selection a bien été ajoutée au panier')
+            location.href = `./index.html`
             return true
         }
     }
@@ -145,8 +147,8 @@ export class CartInProductPage {
 
     // Will set cart from localstorage or set it empty
     setCartFromLocalstorage() {
-        if(window.localStorage.getItem('cart') !== null) {
-            this.cart = JSON.parse(window.localStorage.getItem('cart'))
+        if(localStorage.getItem('cart')) {
+            this.cart = JSON.parse(localStorage.getItem('cart'))
             for(let i = 0 ; i < this.cart.length ; i++) {
                 (this.cart[i])[2] = parseInt((this.cart[i])[2])
             }
@@ -155,22 +157,20 @@ export class CartInProductPage {
 
     // Will replace cart in localhost storage
     replaceCartInLocalstorage() {
-        window.localStorage.removeItem('cart')
-        window.localStorage.setItem('cart', JSON.stringify(this.cart))
+        localStorage.removeItem('cart')
+        localStorage.setItem('cart', JSON.stringify(this.cart))
     }
 
-    // Will delete a product from localstorage
+    // Will delete a product from localstorage with matching id and color
     deleteProductFromLocalstorage() {
-        const localStorage = JSON.parse(window.localStorage.getItem('cart'))
-        for(let i = 0 ; i < localStorage.length ; i++) {
-            const currentProduct = localStorage[i] 
-            if(currentProduct[0] === this.id) {
-                if(currentProduct[1] === this.colorPicked) {
-                    localStorage.splice(i, 1)
-                }
+        const currentLocalStorage = JSON.parse(localStorage.getItem('cart'))
+        for(let i = 0 ; i < currentLocalStorage.length ; i++) {
+            const currentProduct = currentLocalStorage[i] 
+            if(currentProduct[0] === this.id && currentProduct[1] === this.colorPicked) {
+                currentLocalStorage.splice(i, 1)
             }
         }
-        this.cart = localStorage
+        this.cart = currentLocalStorage
         this.replaceCartInLocalstorage()
     }
 }
@@ -237,6 +237,7 @@ export class CartInOrderPage extends CartInProductPage {
         const priceSpan = document.querySelector('#totalPrice')
         const articleSpan = document.querySelector('#totalQuantity')
 
+
         let totalPrice = priceSpan.innerText
         let totalQuantity = articleSpan.innerText
 
@@ -246,39 +247,41 @@ export class CartInOrderPage extends CartInProductPage {
 
         totalPrice = totalPrice + (this.price * gap)
         totalQuantity = totalQuantity + gap
-        console.log('totalPrice : ', totalPrice)
-        console.log('totalQuantity : ', totalQuantity)
 
         priceSpan.innerText = totalPrice
         articleSpan.innerText = totalQuantity
-        // if(this.quantity === 0){
-        //     const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]`
-        //     const productElement = document.querySelector(`${elementIdentifier}`)
-        //     this.deleteFromCart(productElement)
-        // }  bugging when I select 0 (not deleting from localstorage)
     }
 
     // Will calculte the gap between initial quantity and quantity in addEventListener
     changeFromCart(event) {
         this.setCartFromLocalstorage()
         let currentValue = parseInt(event.target.value)
-        console.log('currentValue: ', currentValue)
-        console.log('this.quantity: ', this.quantity)
 
-        if(currentValue == 0||currentValue > 100) {
+        if(currentValue > 100) {
             alert("Veuillez choisir un nombre d'article correcte svp")
             return false
 
+        }else if(currentValue === 0){
+            const elementIdentifier = `[data-id="${ this.id }"][data-color="${ this.colorPicked }"]` 
+            const domElement = document.querySelector(`${elementIdentifier}`)
+            this.deleteFromCart(domElement)
         } else {
-
-                const gap = currentValue - this.quantity 
-                console.log(gap)
-                this.modifyPrice(gap)
-
-            this.cart[this.productIndex] = [this.id, this.colorPicked, currentValue]
-            this.replaceCartInLocalstorage()
+            this.modifyCartQuantity(currentValue)
         }
-    }    
+    }
+
+    // This one will replace the quantity in local storage and refresh total quantity and price
+    modifyCartQuantity(currentValue) {
+        const gap = currentValue - this.quantity 
+        this.modifyPrice(gap)
+        for(let i = 0 ; i < this.cart.length ; i++) {
+            const currentProduct = this.cart[i]
+            if(currentProduct[0] == this.id && currentProduct[1] == this.colorPicked) {
+                this.cart[i] = [this.id, this.colorPicked, currentValue]
+                this.replaceCartInLocalstorage()
+            }
+        }
+    }
 
     /**
      *  Will delete a product from localstorage and the element in page
@@ -286,6 +289,7 @@ export class CartInOrderPage extends CartInProductPage {
      */
     deleteFromCart(domElement) {
         this.setCartFromLocalstorage()
+        this.modifyCartQuantity(0)
         this.deleteProductFromLocalstorage()
         this.cart.splice(this.productIndex, 1)
         document.querySelector('#cart__items').removeChild(domElement)

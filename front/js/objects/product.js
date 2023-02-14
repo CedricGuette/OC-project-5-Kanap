@@ -81,11 +81,12 @@ export class ProductCard extends Product {
 export class ProductPage extends Product {
 
     _elementIdentifier = '.item'
+    
     /**
      * Main method in product page, will render a product card
      */
     getOneProduct() {
-        document.querySelector('title').innerText = this.name
+        document.title = this.name
         const image = new Image('article > .item__img', this.imageUrl, this.altTxt)
         image.addElementImage()
         document.querySelector('#title').innerText = this.name

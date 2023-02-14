@@ -83,7 +83,7 @@ export class AppGetByParam extends App {
         const orderId = this.getParamInUrl(this.param)
         const orderSpan = document.querySelector('#orderId')
         orderSpan.innerText = orderId
-        window.localStorage.removeItem('cart')
+        localStorage.removeItem('cart')
     }
 }
 
@@ -115,7 +115,7 @@ export class AppSend extends App {
         .then(data => { 
 
             const orderId = data.orderId
-            window.location.href = `./confirmation.html?orderId=${orderId}`
+            location.href = `./confirmation.html?orderId=${orderId}`
         })
         .catch(error => console.log( error ))
     }

@@ -49,9 +49,9 @@ export class Order {
 
     getOrderResume(){
         this.initTotalPrice()
-        let productsInCart = JSON.parse(window.localStorage.getItem('cart'))
+        let productsInCart = JSON.parse(localStorage.getItem('cart'))
 
-        if(productsInCart === null) {
+        if(!productsInCart) {
             productsInCart = []
         }
         let productIndex = 0
@@ -75,7 +75,7 @@ export class Order {
 
     /**
      *  Method that iniate price countainer on HTML
-     *  Required to make all operation of price rendering possible
+     *  Required to make all operation of price rendering possible (we get the int into quantity and price element to calculate it)
      */
     initTotalPrice() {
         document.querySelector('#totalQuantity').innerText = 0
@@ -99,7 +99,7 @@ export class Order {
     addErrorMessage(parentTag, errorMessage) {
         const field = document.querySelector(`#${parentTag}`)
         const errorElement = document.querySelector(`#${parentTag}ErrorMsg`)
-        if(field.checkValidity()==! true){
+        if(!field.checkValidity()){
             errorElement.innerText = errorMessage
         } else {
             errorElement.innerText = ''
@@ -121,13 +121,15 @@ export class Order {
     submit() {
 
         const form = document.querySelector('form')
-        const submitButton = document.querySelector('input[type=button]')
-        submitButton.addEventListener('click', () =>{
-
+        form.setAttribute('novalidate','true')
+        form.addEventListener('submit', (event) =>{
+            event.preventDefault()
             this.checkValidityForm()
 
-            if(form.checkValidity() !== false) {
-                if (this.getProductList() === false){
+            if(form.checkValidity()) {
+                this.getProductList()
+                console.log(this.productsInOrder)
+                if (this.productsInOrder == false){
                     alert('Votre panier est vide !')
                 }
                  else {
@@ -143,12 +145,12 @@ export class Order {
     // initialize and make order list of products id or return false if localstorage is empty
     getProductList() {
         this.productsInOrder = []
-        const localStorage = JSON.parse(window.localStorage.getItem('cart'))
+        const currentLocalStorage = JSON.parse(localStorage.getItem('cart'))
 
-        if(localStorage !== null) {
+        if(currentLocalStorage) {
 
-            for(let i = 0 ; i < localStorage.length ; i++){
-                const currentArray = localStorage[i]
+            for(let i = 0 ; i < currentLocalStorage.length ; i++){
+                const currentArray = currentLocalStorage[i]
                 this.productsInOrder.push(currentArray[0])
             }
         } else {
@@ -179,7 +181,7 @@ export class Order {
             },
             products: this.productsInOrder
         }
-
+        console.log(order)
         return order
     }
 }
