@@ -71,19 +71,14 @@ export class ProductCard extends Product {
     }
 
     /**
-    *  Will render the product card in index.html usin
+    *  Will render the product card in index.html 
     */
     getProductCard() {
-        const firstElement = new Attribute (`#items`, 'a', '', '', [['href',`./product.html?id=${this.id}`]], this.productIndex)
-        firstElement.addElementWithAttribut()
-        const article = new Text(`a${this.elementIdentifier}`, 'article', '', '')
-        article.addElementWithText()
-        const image = new Image(`${this.elementIdentifier} > article`, this.imageUrl, `${this.altTxt}, ${this.name}`)
-        image.addElementImage()
-        const h3 = new Text(`${this.elementIdentifier} > article`, 'h3', 'productName', this.name)
-        h3.addElementWithText()
-        const p = new Text(`${this.elementIdentifier} > article`, 'p', 'productDescription', this.description)
-        p.addElementWithText()
+        new Attribute (`#items`, 'a', '', '', [['href',`./product.html?id=${this.id}`]], this.productIndex).addElementWithAttribut()
+        new Text(`a${this.elementIdentifier}`, 'article', '', '').addElementWithText()
+        new Image(`${this.elementIdentifier} > article`, this.imageUrl, `${this.altTxt}, ${this.name}`).addElementImage()
+        new Text(`${this.elementIdentifier} > article`, 'h3', 'productName', this.name).addElementWithText()
+        new Text(`${this.elementIdentifier} > article`, 'p', 'productDescription', this.description).addElementWithText()
     }
 }
 
@@ -93,16 +88,13 @@ export class ProductCard extends Product {
  * @param {object} product one object from GET request
  */
 export class ProductPage extends Product {
-
-    _elementIdentifier = '.item'
-
+    
     /**
      * Main method in product page, will render the product page
      */
     getOneProduct() {
         document.title = this.name
-        const image = new Image('article > .item__img', this.imageUrl, this.altTxt)
-        image.addElementImage()
+        new Image('article > .item__img', this.imageUrl, this.altTxt).addElementImage()
         document.querySelector('#title').innerText = this.name
         document.querySelector('#price').innerText = this.price
         document.querySelector('#description').innerText = this.description
@@ -110,12 +102,9 @@ export class ProductPage extends Product {
         let colorsArray = this.colors
         for(let i = 0; i < colorsArray.length; i++) {
             let a = i + 1
-            const colorsOption = new Attribute(`${this.elementIdentifier} > article > .item__content > .item__content__settings > .item__content__settings__color > #colors `,
-            'option', '', colorsArray[i], [['value', colorsArray[i]]], a)
-            colorsOption.addElementWithAttribut()
+            new Attribute(`#colors `, 'option', '', colorsArray[i], [['value', colorsArray[i]]], a).addElementWithAttribut()
         }
-        const cart = new CartInProductPage(this.id)
-        cart.addToCart()
+        new CartInProductPage(this.id).addToCart()
     }
 }
 
@@ -141,7 +130,6 @@ export class ProductInCart extends ProductCard {
         return this._quantity
     }
 
-
     /**
      *  Will render a product in the cart using the information from localhost and server
      */
@@ -151,18 +139,17 @@ export class ProductInCart extends ProductCard {
             ['data-id', this.id],
             ['data-color', this.colorPicked]
         ]
-        const article = new Attribute('#cart__items','article', '', '', attributesArticle, this.productIndex).addElementWithAttribut()
-        const divImg = new Text(`article${this.elementIdentifier}`, 'div', 'cart__item__img','').addElementWithText()
-        const image = new Image(`${this.elementIdentifier} > .cart__item__img`, this.imageUrl, this.altTxt).addElementImage()
-        const divContent = new Text(`${this.elementIdentifier}`,'div', 'cart__item__content','').addElementWithText()
-        const divDescription = new Text(`${this.elementIdentifier} > .cart__item__content`,'div', 'cart__item__content__description','').addElementWithText()
-        const h2 = new Text(`${this.elementIdentifier} > .cart__item__content > div`,'h2', '', this.name).addElementWithText()
-        const pColor = new Text(`${this.elementIdentifier} > .cart__item__content > div`, 'p','', this.colorPicked).addElementWithText()
-        const pPrice = new Text(`${this.elementIdentifier} > .cart__item__content > div`, 'p', '', `${this.price} €`).addElementWithText()
-        const divSettings = new Text(`${this.elementIdentifier}`, 'div', 'cart__item__content__settings', '').addElementWithText()
-        const divQuantity = new Text(`${this.elementIdentifier} > .cart__item__content__settings`, 'div', 'cart__item__content__settings__quantity', '').addElementWithText()
-        const pQuantity = new Text(`${this.elementIdentifier} > .cart__item__content__settings > div`, 'p', '', 'Qté : ').addElementWithText()
-
+        new Attribute('#cart__items','article', '', '', attributesArticle, this.productIndex).addElementWithAttribut()
+        new Text(`article${this.elementIdentifier}`, 'div', 'cart__item__img','').addElementWithText()
+        new Image(`${this.elementIdentifier} > .cart__item__img`, this.imageUrl, this.altTxt).addElementImage()
+        new Text(`${this.elementIdentifier}`,'div', 'cart__item__content','').addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content`,'div', 'cart__item__content__description','').addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content > div`,'h2', '', this.name).addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content > div`, 'p','', this.colorPicked).addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content > div`, 'p', '', `${this.price} €`).addElementWithText()
+        new Text(`${this.elementIdentifier}`, 'div', 'cart__item__content__settings', '').addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content__settings`, 'div', 'cart__item__content__settings__quantity', '').addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content__settings > div`, 'p', '', 'Qté : ').addElementWithText()
         const attributesInput = [
             ['type','number'],
             ['name','itemQuantity'],
@@ -170,8 +157,8 @@ export class ProductInCart extends ProductCard {
             ['max','100'],
             ['value', this.quantity]
         ]
-        const inputQuantity = new Attribute(`${this.elementIdentifier} > .cart__item__content__settings > div`, 'input', 'itemQuantity', '',attributesInput, null).addElementWithAttribut()
-        const divDelete = new Text(`${this.elementIdentifier} > .cart__item__content__settings`, 'div', 'cart__item__content__settings__delete', '').addElementWithText()
-        const pDelete = new Text(`${this.elementIdentifier} > .cart__item__content__settings > .cart__item__content__settings__delete`, 'p', 'deleteItem', 'Supprimer').addElementWithText()
+        new Attribute(`${this.elementIdentifier} > .cart__item__content__settings > div`, 'input', 'itemQuantity', '',attributesInput, null).addElementWithAttribut()
+        new Text(`${this.elementIdentifier} > .cart__item__content__settings`, 'div', 'cart__item__content__settings__delete', '').addElementWithText()
+        new Text(`${this.elementIdentifier} > .cart__item__content__settings > .cart__item__content__settings__delete`, 'p', 'deleteItem', 'Supprimer').addElementWithText()
     }
 }
