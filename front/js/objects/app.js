@@ -13,8 +13,10 @@ export class App {
     get url() {
         return this._url
     }
-
-    // GET all products
+    /**
+     * GET all products
+     * @async
+     */
     async getAllProducts() {
 
         await fetch(`${ this.url }`)
@@ -31,7 +33,10 @@ export class App {
         .catch(error => console.log( error ))
     }
 
-    // GET products in cart
+    /**
+     * GET products in cart
+     * @async
+     */
     async getCart() {
         await fetch(`${ this.url }`)
         .then(res => res.json())
@@ -58,14 +63,20 @@ export class AppGetByParam extends App {
         return this._param
     }
 
-    // Retrieving param from url
+    /**
+     * Retrieving param from url
+     * @returns {string} param in url
+     */
     getParamInUrl () {
         const url = (new URL (document.location)).searchParams
         const paramInUrl = url.get(this.param)
         return paramInUrl
     }
 
-    // GET one product by Id in url
+    /**
+     * GET one product by Id in url
+     * @async
+     */
     async getOneProduct() {
         await fetch(`${ this.url }${ this.getParamInUrl() }`)
         .then(res => res.json())
@@ -78,7 +89,9 @@ export class AppGetByParam extends App {
         .catch(error => console.log( error ))
     }
 
-    // Will send confirmation order to customer
+    /**
+     * Will send confirmation order to customer
+     */
     getConfirmation() {
         const orderId = this.getParamInUrl(this.param)
         const orderSpan = document.querySelector('#orderId')
@@ -102,7 +115,10 @@ export class AppSend extends App {
         return this._customerOrder
     }
 
-    // POST order to server
+    /**
+     * POST order to server
+     * @async
+     */
     async sendOrder() {
         await fetch(`${ this.url }order`,{
             method: "POST",
