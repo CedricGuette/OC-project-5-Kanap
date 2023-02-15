@@ -1,5 +1,5 @@
 /**
- * Object that contains configuration of dev environment 
+ * Object that contains dev environment configuration
  */
 export class ConfigLoader {
     constructor() {

@@ -2,7 +2,7 @@ import { ProductCard, ProductPage } from './product.js'
 import { Order } from './order.js'
 
 /**
- * Will send get requests
+ * Will send GET requests
  * @param {string} url in config settings
  */
 export class App {
@@ -44,7 +44,7 @@ export class App {
 }
 
 /**
- * Will send get request by param in url
+ * Will send GET request by param in url
  * @param {string} url in config settings
  * @param {string} param to pick in url
  */
@@ -88,7 +88,7 @@ export class AppGetByParam extends App {
 }
 
 /**
- *  Will send the order in POST method to server and get 
+ *  Will send the order in POST method to server
  * @param {string} url from config
  * @param {object} customerOrder 
  */

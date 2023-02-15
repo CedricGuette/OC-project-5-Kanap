@@ -33,7 +33,7 @@ export class Order {
     }
 
     /**
-     * This method is called to render cart resume 
+     * Main method is called to render cart resume 
      */
     getOrderResume(){
         this.initTotalPrice()
@@ -69,8 +69,10 @@ export class Order {
         document.querySelector('#totalQuantity').innerText = 0
         document.querySelector('#totalPrice').innerText = 0
     }
-
-    // Check the validity of all form inputs and 
+    /**
+     * Check the validity of all form inputs and 
+     * @returns {boolean} true if form is valid
+     */
     checkValidityForm() {
         this.addErrorMessageSimplified('firstName','prénom', 0)
         this.addErrorMessageSimplified('lastName','nom', 1) // allows spaces in case of multiple last names
@@ -91,7 +93,7 @@ export class Order {
 
     /**
      *  Will render errorMessage in right HTMLElement if the input of parentTag is not valid
-     * @param {string} fieldName
+     * @param {string} fieldName 
      * @param {string} errorMessage 
      */
     addErrorMessage(fieldName, errorMessage, indexRegex) {
@@ -114,10 +116,10 @@ export class Order {
      */
     regexer(fieldName, indexRegex) {
         const typeOfRegex = [
-            "^[a-zA-ZâàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-]{2,20}$",
-            "^[a-zA-ZâàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-'\ ]{2,20}$",            
-            "^[a-zA-Z0-9âàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-'\ ]{2,60}$",
-            "^[a-zA-Z0-9.'\-_]{1,64}[@]{1}[a-zA-Z0-9.'\-_]{2,255}[.]{1}[a-z]{2,10}$"
+            "^[a-zA-ZâàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-]{2,20}$", // First name and City fields
+            "^[a-zA-ZâàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-'\ ]{2,20}$", // Last name allows space           
+            "^[a-zA-Z0-9âàéèëêöôûùüïîÂÀÉÈËÊÖÛÙÜÏÎ'\-'\ ]{2,60}$", // Address field
+            "^[a-zA-Z0-9.'\-_]{1,64}[@]{1}[a-zA-Z0-9.'\-_]{2,255}[.]{1}[a-z]{2,10}$" // Email field
         ]
 
         const field = document.querySelector(`#${fieldName}`)
@@ -127,8 +129,9 @@ export class Order {
 
     /**
      *  Will call previous method to add 'veuillez renseigner votre' at fieldName string
-     * @param {string} parentTag 
+     * @param {string} parentTag tag in form field
      * @param {string} fieldName 
+     * @param {int} indexRegex will be used to select a regex rule in array
      */
     addErrorMessageSimplified(parentTag, fieldName, indexRegex) {
         let errorMessage = 'Veuillez renseigner votre'
@@ -138,7 +141,6 @@ export class Order {
 
     // Main method to submit the order
     submit() {
-
         const form = document.querySelector('form')
         form.setAttribute('novalidate','true') // to block submit field
         form.addEventListener('submit', (event) =>{
@@ -159,7 +161,9 @@ export class Order {
         })
     }
 
-    // initialize and make order list of products id or return false if localstorage is empty
+    /**
+     * Initialize and make order list of products id
+     */
     getProductList() {
         this.productsInOrder = []
         const currentLocalStorage = JSON.parse(localStorage.getItem('cart'))
@@ -170,17 +174,14 @@ export class Order {
                 const currentArray = currentLocalStorage[i]
                 this.productsInOrder.push(currentArray[0])
             }
-        } else {
-            return false
         }
     }
 
     /**
      *  Will return the order object from all inputs and this.productsInOrder
-     * @returns {object} order 
+     * @returns {object} order object for server request
      */
     getContactObject() {
-        this.getProductList()
 
         const firstName = document.querySelector('#firstName').value
         const lastName = document.querySelector('#lastName').value

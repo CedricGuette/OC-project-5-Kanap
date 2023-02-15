@@ -58,7 +58,6 @@ export class Product {
  * 
  * @param {object} product one object from GET request
  * @param {int} productIndex used to put the HTML element in the right place
- * @returns {string} elementIdentifier 
  */
 export class ProductCard extends Product {
 
@@ -72,19 +71,19 @@ export class ProductCard extends Product {
     }
 
     /**
-     *  Will render the product card in index.html usin
-     */
-        getProductCard() {
-            const firstElement = new Attribute (`#items`, 'a', '', '', [['href',`./product.html?id=${this.id}`]], this.productIndex)
-            firstElement.addElementWithAttribut()
-            const article = new Text(`a${this.elementIdentifier}`, 'article', '', '')
-            article.addElementWithText()
-            const image = new Image(`${this.elementIdentifier} > article`, this.imageUrl, `${this.altTxt}, ${this.name}`)
-            image.addElementImage()
-            const h3 = new Text(`${this.elementIdentifier} > article`, 'h3', 'productName', this.name)
-            h3.addElementWithText()
-            const p = new Text(`${this.elementIdentifier} > article`, 'p', 'productDescription', this.description)
-            p.addElementWithText()
+    *  Will render the product card in index.html usin
+    */
+    getProductCard() {
+        const firstElement = new Attribute (`#items`, 'a', '', '', [['href',`./product.html?id=${this.id}`]], this.productIndex)
+        firstElement.addElementWithAttribut()
+        const article = new Text(`a${this.elementIdentifier}`, 'article', '', '')
+        article.addElementWithText()
+        const image = new Image(`${this.elementIdentifier} > article`, this.imageUrl, `${this.altTxt}, ${this.name}`)
+        image.addElementImage()
+        const h3 = new Text(`${this.elementIdentifier} > article`, 'h3', 'productName', this.name)
+        h3.addElementWithText()
+        const p = new Text(`${this.elementIdentifier} > article`, 'p', 'productDescription', this.description)
+        p.addElementWithText()
     }
 }
 
@@ -125,7 +124,6 @@ export class ProductPage extends Product {
  * @param {int} productIndex used to put the HTML element in the right place
  * @param {sting} colorPicked wich color was picked by customer
  * @param {int} quantity how much of this product in cart
- * @returns {string} elementIdentifier 
  */
 export class ProductInCart extends ProductCard {
 

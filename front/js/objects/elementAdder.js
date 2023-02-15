@@ -35,8 +35,9 @@ export class Image extends ElementAdder {
     get imageUrl() {
         return this._imageUrl
     }
-
-    // Will add image in parentClass
+    /**
+     * Will add image in parentClass
+     */
     addElementImage() {
         const element = document.createElement('img')
         const parentElement = document.querySelector(`${this.parentClass}`)
@@ -72,8 +73,9 @@ export class Text extends ElementAdder {
     get innerText() {
         return this._innerText
     }
-
-    // Method called to add a HTML element with the right class and text
+    /**
+     * Method called to add a HTML element with the right class and text
+     */
     addElementWithText() {
         const element = document.createElement(this.tagName)
         const parentElement = document.querySelector(`${this.parentClass}`)
@@ -110,8 +112,9 @@ export class Attribute extends Text {
     get elementIndex() {
         return this._elementIndex
     }
-
-    // Method to add an HTML element with all attributs into the attributes array
+    /**
+     * Method to add an HTML element with all attributs into the attributes array
+     */
     addElementWithAttribut() {
         this.addElementWithText()
         let element = ''
